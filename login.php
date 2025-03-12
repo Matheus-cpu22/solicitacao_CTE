@@ -19,8 +19,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // DEBUG: Mostra o hash salvo no banco (REMOVA ISSO EM PRODUÇÃO)
             // echo "Hash no banco: " . $hash_senha . "<br>";
-
             // Verifica se a senha digitada bate com o hash armazenado
+
+            
             if (password_verify($senha, $hash_senha)) {
                 $_SESSION["Loginusuario"] = $usuario;
                 header("Location: painel.php");
