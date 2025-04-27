@@ -17,8 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $row = $resultado->fetch_assoc();
             $hash_senha = $row["senhaUsuario"];
 
-            // DEBUG: Mostra o hash salvo no banco (REMOVA ISSO EM PRODUÇÃO)
-            // echo "Hash no banco: " . $hash_senha . "<br>";
+            
             // Verifica se a senha digitada bate com o hash armazenado
 
             

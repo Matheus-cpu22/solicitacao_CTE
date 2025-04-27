@@ -1,0 +1,46 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-weight: bold;
+}
+
+.table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.dataTables_filter input {
+    margin-left: 0.5em;
+}
+
+.dataTables_length select {
+    margin-right: 0.5em;
+}
+
+/* Aumentar largura da coluna "Ação" */
+table td:last-child, 
+table th:last-child {
+    min-width: 220px;
+}
+
+/* Melhorar visibilidade dos campos dentro da coluna "Ação" */
+form input[type="text"],
+form input[type="file"] {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+}
+
+/* Botão de salvar com espaço */
+form button[type="submit"] {
+    width: 100%;
+    margin-top: 4px;
+}
+
