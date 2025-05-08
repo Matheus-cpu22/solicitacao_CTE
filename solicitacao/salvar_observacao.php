@@ -2,18 +2,18 @@
 include("conexao.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id = $_POST['idSolicitacao'];
+    $id = $_POST['id'];
     $observacao1 = $_POST['observacaoExtra1'];
     $arquivoNome = "";
 
     // Verifica se um arquivo foi enviado
-    if (!empty($_FILES['arquivoPDF[]']['name'])) {
+    if (!empty($_FILES['arquivoPDF']['name'])) {
         $diretorioUpload = "uploads/";
         if (!is_dir($diretorioUpload)) {
             mkdir($diretorioUpload, 0777, true);
         }
 
-        $arquivoNome = time() . "_" . basename($_FILES['arquivoPDF[]']['name']);
+        $arquivoNome = time() . "_" . basename($_FILES['arquivoPDF']['name']);
         $caminhoArquivo = $diretorioUpload . $arquivoNome;
 
         // Verifica se é um PDF
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Atualiza a solicitação e marca como concluída
-    $sql = "UPDATE tblsolicitacao SET observacaoExtra1 = ?, arquivoPDF = ?, status = 'Concluído', dataConclusao = NOW() WHERE idSolicitacao = ?";
+    $sql = "UPDATE tblsolicitacao SET observacaoExtra = ?, arquivoPDF = ?, status = 'Concluído', dataConclusao = NOW() WHERE id = ?";
     $stmt = $conexao->prepare($sql);
     $stmt->bind_param("ssi", $observacao1, $arquivoNome, $id);
 

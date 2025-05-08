@@ -39,7 +39,7 @@ $result = $conexao->query($sql);
                     <tbody>
                         <?php while ($row = $result->fetch_assoc()) { ?>
                         <tr>
-                            <td><?= $row['idSolicitacao'] ?></td>
+                            <td><?= $row['id'] ?></td>
                             <td><?= htmlspecialchars($row['nomeMotorista']) ?></td>
                             <td><?= htmlspecialchars($row['placaCavalo']) ?></td>
                             <td><?= htmlspecialchars($row['placaCarretas']) ?></td>
@@ -50,22 +50,23 @@ $result = $conexao->query($sql);
                             <td><?= htmlspecialchars($row['dataSolicitacao']) ?></td>
                             <td>
                                 <?php if ($row['arquivoPDF']) { ?>
-                                    <a href="uploads/<?= $row['arquivoPDF'] ?>" class="btn btn-outline-secondary btn-sm" target="_blank">Baixar</a>
+                                    <a href="/TCIprojeto/solicitacao_CTE/solicitacao/uploads/<?= $row['arquivoPDF'] ?>" class="btn btn-outline-secondary btn-sm" target="_blank">Baixar</a>
+
                                 <?php } else { ?>
                                     <span class="text-muted">Nenhum</span>
                                 <?php } ?>
                             </td>
                             <td>
-                            <?php if ($row['status'] !== 'Concluido') { ?>
+                            <?php if ($row['status'] == 'Pendente') { ?>
     <form action="salvar_observacao.php" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="idSolicitacao" value="<?= $row['idSolicitacao'] ?>">
+        <input type="hidden" name="id" value="<?= $row['id'] ?>">
         <input type="text" name="observacaoExtra1" class="form-control form-control-sm mb-2" placeholder="Nova Observação">
-        <input type="file" name="arquivoPDF[]" multiple="multiple" accept=".pdf" class="form-control form-control-sm mb-2">
+        <input type="file" name="arquivoPDF" accept=".pdf" class="form-control form-control-sm mb-2">
         <button type="submit" class="btn btn-success btn-sm">Salvar</button>
     </form>
 <?php } else { ?>
     <div class="form-control form-control-sm mb-2" style="background-color: #f1f1f1;">
-        <?= nl2br(htmlspecialchars($row['observacaoExtra1'])) ?>
+        <?= nl2br(htmlspecialchars($row['observacaoExtra'])) ?>
     </div>
 <?php } ?>
 
