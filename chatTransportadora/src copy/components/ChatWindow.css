@@ -1,0 +1,92 @@
+.chat-window {
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+
+.chat-window-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  padding: 40px;
+  text-align: center;
+}
+
+.empty-icon {
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.chat-window-empty h2 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.chat-window-empty p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.chat-window-header {
+  padding: 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.conversation-info {
+  display: flex;
+  align-items: center;
+}
+
+.conversation-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.conversation-details h3 {
+  margin: 0 0 4px 0;
+  color: #333;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.conversation-status {
+  color: #28a745;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.chat-window-messages {
+  flex: 1;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+}
+
+.chat-window-input {
+  background-color: #fff;
+  border-top: 1px solid #e9ecef;
+  padding: 0;
+}
+
+
