@@ -37,7 +37,7 @@ $resultConcluidas = $conexao->query($sqlConcluidas);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/solicitacoes.css">
     <link rel="stylesheet" href="css/pop-up.css">
-    <title>Solicitações</title>
+    <title>Lista de Solicitações</title>
 </head>
 
 <body>

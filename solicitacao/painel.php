@@ -25,7 +25,7 @@
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
             <li class="nav-item">
-              <a class="nav-link" href="/solicitacao_CTE/solicitacao/solicitacoes.php">Solicitações</a>
+              <a class="nav-link" href="./listaSolicitacoes.php">Lista de Solicitações</a>
             </li>
           </ul>
         </div>
@@ -87,7 +87,7 @@
       <!-- ANEXOS -->
 
       <div class="text-center">
-        <button type="submit" class="btn btn-custom px-5">SOLICITAR</button>
+        <button class="btn btn-custom px-5" style="color:white;">SOLICITAR</button>
       </div>
 
     </form>

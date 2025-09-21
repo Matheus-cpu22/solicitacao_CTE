@@ -1,6 +1,8 @@
 CREATE DATABASE Site;
 USE Site;
 
+
+-- TABELA DAS REQUISIÇÕES
 CREATE TABLE tblsolicitacao(
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	nomeMotorista VARCHAR(130) NOT NULL,
@@ -17,7 +19,7 @@ CREATE TABLE tblsolicitacao(
 	dataConclusao TIMESTAMP NULL
 );
 
--- Indices para consultas mais optimizadas
+-- Indices para consultas mais otimizadas
 CREATE INDEX idx_tipoOperacao ON tblsolicitacao(tipoOperacao);
 CREATE INDEX idx_status ON tblsolicitacao(STATUS);
 
@@ -35,13 +37,40 @@ CREATE TABLE tblarquivado(
 	status ENUM('Pendente','Concluído') DEFAULT 'Concluído' NOT NULL,
 	dataSolicitacao TIMESTAMP NOT NULL,
 	dataConclusao TIMESTAMP NULL
-) ENGINE=InnoDB ROW_FORMAT=COMPRESSED; 
+) ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
+
+
+ 
+-- TABELAS DE CHAT
+CREATE TABLE usuario (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	nome VARCHAR(200) NOT NULL,
+	email VARCHAR(200) NOT NULL UNIQUE,
+	senha VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE conversa (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	nome VARCHAR(200) NOT NULL,
+	criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE conversa_membros (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	id_conversa INT NOT NULL,
+	id_usuario INT NOT NULL,
+	entrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	FOREIGN KEY (id_conversa) REFERENCES conversa(id),
+	FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+);
+
+
 
 -- PROCEDURE DE ARQUIVAMENTO
 DELIMITER //
 CREATE PROCEDURE arquivar_requerimentos()
 BEGIN
-    -- Mover concluidos com mais de 30 dias para arquivados
+    -- Mover concluidos com mais de 30 dias para arquivados (tblarquivado)
     INSERT INTO tblarquivado 
     (id, nomeMotorista, placaCavalo, placaCarretas, destino, valorOperacao, tipoOperacao, observacaoSolicitacao, observacaoExtra, arquivoPDF, status, dataSolicitacao, dataConclusao)
     SELECT id, nomeMotorista, placaCavalo, placaCarretas, destino, valorOperacao, tipoOperacao, observacaoSolicitacao, observacaoExtra, arquivoPDF, status, dataSolicitacao, dataConclusao
@@ -60,11 +89,10 @@ SET GLOBAL event_scheduler = ON;
 -- AGENDAR EXECUÇÃO DIÁRIA
 CREATE EVENT evt_arquivamento_automatico
 ON SCHEDULE EVERY 1 DAY
-STARTS CURRENT_TIMESTAMP
+STARTS TIMESTAMP(CURRENT_DATE + INTERVAL 1 DAY)
 DO
 BEGIN
     CALL arquivar_requerimentos();
 END //
 DELIMITER ;
-
 

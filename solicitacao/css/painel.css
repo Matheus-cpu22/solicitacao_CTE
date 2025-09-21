@@ -54,6 +54,7 @@ body {
   }
 
   .btn-custom {
+    color:white;
     background-color: #0077cc;
     border: none;
   }
