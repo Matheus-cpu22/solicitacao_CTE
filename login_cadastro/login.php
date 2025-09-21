@@ -8,8 +8,7 @@
         $sql = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
         $consulta = $conexao->prepare($sql);
         $consulta->bind_param("si", $email, $senha);
-        $consulta->execute() or die("Falha na consulta: " . $conexao->error);
-
+        $consulta->execute();
 
         $result = $consulta->get_result();
         $qtd_rows = $result->num_rows;
