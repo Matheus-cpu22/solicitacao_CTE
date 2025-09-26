@@ -39,9 +39,6 @@ CREATE TABLE tblarquivado(
 	dataConclusao TIMESTAMP NULL
 ) ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
 
-
- 
--- TABELAS DE CHAT
 CREATE TABLE usuario (
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	nome VARCHAR(200) NOT NULL,
@@ -49,6 +46,8 @@ CREATE TABLE usuario (
 	senha VARCHAR(255) NOT NULL
 );
 
+
+-- TABELAS DE CHAT
 CREATE TABLE conversa (
 	id INT PRIMARY KEY AUTO_INCREMENT,
 	nome VARCHAR(200) NOT NULL,
@@ -96,3 +95,5 @@ BEGIN
 END //
 DELIMITER ;
 
+-- Usuário base
+INSERT INTO usuario (nome, email, senha) VALUES ("adm", "admin@empresa.com", "$2y$10$Akr4kI8jBU5t9x.ay4H41..OV83RF3g.EC9HfJmdR4mBYZA.39TqG"); -- TEMPORÁRIO!

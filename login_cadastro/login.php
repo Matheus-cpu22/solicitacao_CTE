@@ -1,30 +1,35 @@
 <?php
     include("../solicitacao/conexao.php");
 
-    if(isset($_POST["email"]) || isset($_POST["senha"])) {
+    if(isset($_POST["email"]) && isset($_POST["senha"])) {
         $email = $_POST["email"];
-        $senha = (int) $_POST["senha"];
+        $senha = $_POST["senha"];
 
-        $sql = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
+        $sql = "SELECT * FROM usuario WHERE email = ?";
         $consulta = $conexao->prepare($sql);
-        $consulta->bind_param("si", $email, $senha);
+        $consulta->bind_param("s", $email);
         $consulta->execute();
 
         $result = $consulta->get_result();
         $qtd_rows = $result->num_rows;
 
-        if($qtd_rows == 1) {
-            $user = $result->fetch_assoc();
+        $user = $result->fetch_assoc();
+        $hash = $user["senha"];
 
+        if($qtd_rows == 1 && password_verify($senha, $hash)) {
             if(!isset($_SESSION)) session_start();
 
             $_SESSION["id"] = $user["id"];
             $_SESSION["nome"] = $user["nome"];
+            $_SESSION["email"] = $user["email"];
 
             echo "<script>alert('Login realizado com sucesso!'); window.location.href='../solicitacao/painel.php';</script>";
         } else {
             echo "<script>alert('Erro ao logar, email ou senha incorretos.'); window.location.href='./login.php';</script>";
         }
+
+        $conexao->close();
+        $consulta->close();
     }
 ?>
 
