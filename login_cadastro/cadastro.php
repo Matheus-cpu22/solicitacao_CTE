@@ -55,9 +55,17 @@
         </label>
         <label>
             Senha: 
-            <input type="password" name="senha" required>
+            <input type="password" name="senha" id="senha" required>
         </label>
-        <button>Criar</button>
+        <button id="botao" >Criar</button>
     </form>
+
+    <script>
+        const button = document.querySelector("#botao")
+        const inputSenha = document.querySelector("#senha")
+        if (inputSenha.value < 8) {
+            button.disabled = filled
+        }
+    </script>
 </body>
 </html>

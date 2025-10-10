@@ -1,56 +1,37 @@
 <?php
-    include("../solicitacao/conexao.php");
+include("../solicitacao/conexao.php");
 
-    if(isset($_POST["email"]) && isset($_POST["senha"])) {
-        $email = $_POST["email"];
-        $senha = $_POST["senha"];
+if (isset($_POST["email"]) && isset($_POST["senha"])) {
+    $email = $_POST["email"];
+    $senha = $_POST["senha"];
 
-        $sql = "SELECT * FROM usuario WHERE email = ?";
-        $consulta = $conexao->prepare($sql);
-        $consulta->bind_param("s", $email);
-        $consulta->execute();
+    $sql = "SELECT * FROM usuario WHERE email = ?"; // Consulta o banco atrás de uma correspondencia para o email informado
+    $consulta = $conexao->prepare($sql);
+    $consulta->bind_param("s", $email);
+    $consulta->execute();
 
-        $result = $consulta->get_result();
-        $qtd_rows = $result->num_rows;
+    // Obtem o resultado e qtd de linhas da consulta
+    $result = $consulta->get_result();
+    $qtd_rows = $result->num_rows;
 
-        $user = $result->fetch_assoc();
-        $hash = $user["senha"];
+    $user = $result->fetch_assoc();
+    $hash = $user["senha"];
 
-        if($qtd_rows == 1 && password_verify($senha, $hash)) {
-            if(!isset($_SESSION)) session_start();
+    if ($qtd_rows == 1 && password_verify($senha, $hash)) { // Verifica se houve alguma correspondência para o email e se a senha do banco bate com a senha informada
+        if (!isset($_SESSION)) session_start(); // Inicia a sessão
 
-            $_SESSION["id"] = $user["id"];
-            $_SESSION["nome"] = $user["nome"];
-            $_SESSION["email"] = $user["email"];
+        // Salva informações do usuário para uso posterior
+        $_SESSION["id"] = $user["id"];
+        $_SESSION["nome"] = $user["nome"];
+        $_SESSION["email"] = $user["email"];
 
-            echo "<script>alert('Login realizado com sucesso!'); window.location.href='../solicitacao/painel.php';</script>";
-        } else {
-            echo "<script>alert('Erro ao logar, email ou senha incorretos.'); window.location.href='./login.php';</script>";
-        }
-
-        $conexao->close();
-        $consulta->close();
+        echo "<script>alert('Login realizado com sucesso!'); window.location.href='../solicitacao/painel.php';</script>";
+    } else {
+        echo "<script>alert('Erro ao logar, email ou senha incorretos.'); window.location.href='./login.php';</script>";
     }
+
+    $conexao->close();
+    $consulta->close();
+}
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <form action="" method="POST">
-        <label>
-            Email 
-            <input type="email" name="email" required>
-        </label>
-        <label>
-            Senha
-            <input type="password" name="senha" required>
-        </label>
-        <button>Entrar</button>
-    </form>
-</body>
-</html>
