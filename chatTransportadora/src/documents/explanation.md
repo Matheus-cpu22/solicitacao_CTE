@@ -120,8 +120,8 @@ Gerencia a comunicação com o backend via REST API:
 - Configuração centralizada do Axios
 - Interceptors para autenticação
 - Serviços específicos para usuários, conversas e mensagens
-- Fallback com dados simulados para demonstração
-- Tratamento de erros centralizado
+- Removidos mocks: o frontend agora consome apenas a API real
+- `getCurrentUser()` lê do `localStorage` (`chatUser` ou chaves `userId/userName/userEmail`)
 
 **Endpoints Implementados:**
 - `GET /usuarios` - Listar usuários
@@ -149,6 +149,126 @@ Gerencia a comunicação em tempo real via WebSocket:
 - `new_message` - Receber nova mensagem
 - `user_online` - Usuário ficou online
 - `user_offline` - Usuário ficou offline
+
+## Arquitetura do Backend
+
+### Tecnologias
+- **Node.js + Express**: API REST e static server de uploads
+- **Socket.IO**: comunicação em tempo real
+- **MySQL (mysql2/promise)**: persistência
+- **Multer**: upload de documentos
+- **CORS, morgan, dotenv**: cross-origin, logs e variáveis de ambiente
+
+### Estrutura de Pastas (backend)
+```
+backend/
+├─ server.js                # Bootstrap do servidor HTTP + Socket.IO
+└─ src/
+   ├─ db.js                # Pool MySQL e criação automática de tabelas
+   ├─ socket.js            # Handlers dos eventos Socket.IO
+   └─ routes/
+      ├─ index.js          # Agregador de rotas
+      ├─ usuarios.js       # GET /api/usuarios
+      ├─ conversas.js      # GET /api/conversas/usuario/:id, POST /api/conversas
+      └─ mensagens.js      # GET /api/mensagens/conversa/:id, POST /api/mensagens, POST /api/mensagens/documento
+```
+
+### CORS
+Configurado para aceitar `CLIENT_ORIGIN` (por padrão `http://localhost:5173`) e métodos `GET/POST` no Socket.IO e `GET/POST/PUT/DELETE/OPTIONS` no Express.
+
+### Rotas REST (Express)
+- `GET /api/usuarios`: retorna `id`, `nome`, `email` de `usuario` ordenados por nome.
+- `GET /api/conversas/usuario/:id`: retorna conversas de um usuário, incluindo última mensagem e participantes.
+- `POST /api/conversas`: cria conversa e insere membros (`conversa` e `conversa_membros`) em transação.
+- `GET /api/mensagens/conversa/:id`: retorna histórico da conversa ordenado por `enviado_em`.
+- `POST /api/mensagens`: insere mensagem de texto (`tipo='texto'`).
+- `POST /api/mensagens/documento`: upload com Multer, salva arquivo em `/uploads`, persiste `tipo='documento'`, `conteudo` com caminho relativo, além de `nome_arquivo` e `tamanho_arquivo`.
+
+### Upload de Documentos (Multer)
+- Armazena arquivos em `backend/uploads/` com nome único (`<timestamp>-<random>-<original>`)
+- Expõe arquivos via rota estática `GET /uploads/...`
+- Persistência em `mensagem` respeita os campos: `tipo`, `nome_arquivo`, `tamanho_arquivo` e `conteudo` com o caminho relativo (ex.: `/uploads/123-arquivo.pdf`).
+
+### Socket.IO
+- Eventos suportados:
+  - `join_conversation` / `leave_conversation`: usa salas nomeadas `conversation:<id>`
+  - `send_message`: insere no MySQL e faz broadcast `new_message` para a sala da conversa
+  - `new_message`: recebido pelo frontend para renderizar instantaneamente
+  - `user_online` / `user_offline`: broadcast global quando um socket conecta/desconecta com `auth.userId`
+- Integração com persistência: ao receber `send_message`, grava em `mensagem` com os campos de documento quando aplicável e emite para a sala correspondente.
+
+### Variáveis de Ambiente
+Backend lê `.env` (ver `SETUP_GUIDE.md`):
+- `PORT=3001`, `CLIENT_ORIGIN=http://localhost:5173`
+- `DB_HOST=localhost`, `DB_PORT=3307`, `DB_USER=root`, `DB_PASSWORD=aluno`, `DB_NAME=chat_transportadora`
+Frontend (Vite) usa:
+- `VITE_API_URL`, `VITE_SOCKET_URL`, `VITE_USE_MOCKS=false` (mocks desativados por padrão)
+
+### Populando usuários no banco
+Para que o chat funcione, a tabela `usuario` deve conter registros válidos:
+```sql
+INSERT INTO usuario (nome, email, senha)
+VALUES ('João da Silva', 'joao@exemplo.com', '$2y$10$hash_bcrypt_aqui');
+```
+Observação: a coluna `senha` armazena hash (ex.: `password_hash` no PHP). Use o fluxo de cadastro existente em `login_cadastro/cadastro.php` para gerar hashes automaticamente.
+
+### Integração com login PHP
+- O login PHP (`login_cadastro/login.php`) cria sessão PHP (`$_SESSION`). Para o chat (React) reconhecer o usuário, grave também no browser um objeto JSON em `localStorage` após login:
+```javascript
+// Exemplo (após login bem-sucedido no PHP via resposta/redirect com script)
+localStorage.setItem('chatUser', JSON.stringify({ id: USER_ID, nome: USER_NOME, email: USER_EMAIL }));
+```
+- Alternativas:
+  - Redirecionar para o frontend com query params e lá persistir em `localStorage`.
+  - Expor um endpoint PHP que retorne o usuário autenticado e o frontend chama ao carregar.
+
+Com isso, `userService.getCurrentUser()` passará a retornar o usuário real, e o chat carregará conversas/mensagens para esse `id`.
+
+### Fluxo de Envio de Documento
+1. Frontend chama `POST /api/mensagens/documento` com `FormData` (`arquivo`, `id_conversa`, `id_usuario`).
+2. Multer salva o arquivo em `backend/uploads/` e injeta metadados em `req.file`.
+3. API insere em `mensagem` com `tipo='documento'`, `conteudo` = caminho relativo, `nome_arquivo` e `tamanho_arquivo`.
+4. Resposta retorna a linha criada; opcionalmente, o frontend pode acionar `send_message` via WebSocket em fluxos futuros.
+
+### ensureSchema (Criação de Tabelas)
+No bootstrap do servidor, a função `ensureSchema` (em `backend/src/db.js`) cria as tabelas caso não existam:
+```sql
+CREATE TABLE IF NOT EXISTS usuario (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nome VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  senha VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS conversa (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  nome VARCHAR(255) NOT NULL,
+  criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS conversa_membros (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_conversa INT NOT NULL,
+  id_usuario INT NOT NULL,
+  entrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_conversa) REFERENCES conversa(id) ON DELETE CASCADE,
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS mensagem (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  id_conversa INT NOT NULL,
+  id_usuario INT NOT NULL,
+  conteudo TEXT,
+  tipo ENUM('texto', 'documento') DEFAULT 'texto',
+  nome_arquivo VARCHAR(255),
+  tamanho_arquivo BIGINT,
+  enviado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_conversa) REFERENCES conversa(id) ON DELETE CASCADE,
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE
+);
+```
+Isso garante que os campos `tipo`, `nome_arquivo` e `tamanho_arquivo` existam na tabela `mensagem` e que o backend possa persistir tanto mensagens de texto quanto documentos.
 
 ## Estrutura do Banco de Dados
 
@@ -348,5 +468,22 @@ Este projeto implementa uma base sólida para um sistema de chat em tempo real, 
 
 O código está estruturado de forma a facilitar a adição de novas funcionalidades e a integração com um backend real, mantendo a separação clara entre lógica de apresentação e lógica de negócio.
 
+## Registro de Modificações Recentes (Changelog)
 
+### 2025-10-17
+- Frontend: criado arquivo `.env.development` com:
+  - `VITE_API_URL=http://localhost:3001/api`
+  - `VITE_SOCKET_URL=http://localhost:3001`
+  - `VITE_USE_MOCKS=false`
+- Frontend: alterado fallback do flag de mocks em `src/services/socket.js` para desativado por padrão:
+  - de `String(import.meta?.env?.VITE_USE_MOCKS || 'true') === 'true'`
+  - para `String(import.meta?.env?.VITE_USE_MOCKS ?? 'false') === 'true'`
+- Frontend: adicionados logs de debug no `ChatContext.jsx` e no `SocketService` para rastrear:
+  - inicialização do usuário
+  - conexão do WebSocket
+  - criação de conversas
+  - envio/recebimento de mensagens
+- Backend: confirmado funcionamento do servidor em `http://localhost:3001` e endpoints `/api/*`.
+
+Motivação: corrigir cenário em que o frontend permanecia em “modo mock”, impedindo conexão via WebSocket e o envio/recebimento de mensagens em tempo real.
 

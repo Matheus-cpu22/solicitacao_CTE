@@ -17,8 +17,11 @@ const ChatList = () => {
 
   useEffect(() => {
     loadUsers();
+  }, [loadUsers]); // Carregar usuários quando a função mudar
+
+  useEffect(() => {
     loadConversations();
-  }, [loadUsers, loadConversations]);
+  }, [loadConversations]); // Carregar conversas quando a função mudar
 
   const handleUserClick = async (user) => {
     // Verificar se já existe uma conversa com este usuário

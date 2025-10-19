@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { userService, conversationService, messageService } from '../services/api';
 import socketService from '../services/socket';
 
@@ -128,16 +128,26 @@ export const ChatProvider = ({ children }) => {
   // Inicializar usuário atual
   useEffect(() => {
     const currentUser = userService.getCurrentUser();
+    console.log('Inicializando usuário:', currentUser);
+    console.log('localStorage chatUser:', localStorage.getItem('chatUser'));
     dispatch({ type: 'SET_CURRENT_USER', payload: currentUser });
   }, []);
 
-  // Conectar ao WebSocket
+  // Conectar ao WebSocket quando o usuário estiver definido
   useEffect(() => {
+    if (!state.currentUser) return;
+
     socketService.connect();
 
     // Configurar listeners do WebSocket
     const handleNewMessage = (message) => {
-      dispatch({ type: 'ADD_MESSAGE', payload: message });
+      console.log('Nova mensagem recebida via WebSocket:', message);
+      
+      // Só adicionar mensagem se for da conversa atual
+      if (state.currentConversation && message.id_conversa === state.currentConversation.id) {
+        dispatch({ type: 'ADD_MESSAGE', payload: message });
+      }
+      
       dispatch({
         type: 'UPDATE_CONVERSATION_LAST_MESSAGE',
         payload: {
@@ -165,10 +175,10 @@ export const ChatProvider = ({ children }) => {
       socketService.removeListener('user_online', handleUserOnline);
       socketService.removeListener('user_offline', handleUserOffline);
     };
-  }, []);
+  }, [state.currentUser]);
 
   // Carregar usuários
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: { key: 'users', value: true } });
       const users = await userService.getUsers();
@@ -176,10 +186,10 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
-  };
+  }, []);
 
   // Carregar conversas
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     if (!state.currentUser) return;
 
     try {
@@ -189,7 +199,7 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
-  };
+  }, [state.currentUser]);
 
   // Selecionar conversa
   const selectConversation = async (conversation) => {
@@ -210,24 +220,34 @@ export const ChatProvider = ({ children }) => {
 
   // Enviar mensagem
   const sendMessage = async (content) => {
-    if (!state.currentConversation || !state.currentUser) return;
+    console.log('Tentando enviar mensagem:', { content, currentConversation: state.currentConversation, currentUser: state.currentUser });
+    
+    if (!state.currentUser) {
+      console.log('ERRO: Usuário não está definido no estado');
+      console.log('Verificando localStorage:', localStorage.getItem('chatUser'));
+      return;
+    }
+    
+    if (!state.currentConversation) {
+      console.log('ERRO: Conversa não está selecionada');
+      console.log('Conversas disponíveis:', state.conversations);
+      return;
+    }
 
     try {
-      const message = await messageService.sendMessage(
-        state.currentConversation.id,
-        content,
-        state.currentUser.id
-      );
-
-      // Enviar via WebSocket para outros usuários
-      socketService.sendMessage({
-        ...message,
+      const messageData = {
         id_conversa: state.currentConversation.id,
-      });
-
-      // Adicionar mensagem ao estado local
-      dispatch({ type: 'ADD_MESSAGE', payload: message });
+        id_usuario: state.currentUser.id,
+        conteudo: content,
+        tipo: 'texto'
+      };
+      
+      console.log('Enviando mensagem via WebSocket:', messageData);
+      
+      // Enviar apenas via WebSocket (que salva no banco e emite para outros usuários)
+      socketService.sendMessage(messageData);
     } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
   };
@@ -237,20 +257,18 @@ export const ChatProvider = ({ children }) => {
     if (!state.currentConversation || !state.currentUser) return;
 
     try {
+      // Enviar documento via API REST (para upload do arquivo)
       const message = await messageService.sendDocument(
         state.currentConversation.id,
         file,
         state.currentUser.id
       );
 
-      // Enviar via WebSocket para outros usuários
+      // Enviar via WebSocket para outros usuários (sem duplicar o envio)
       socketService.sendMessage({
         ...message,
         id_conversa: state.currentConversation.id,
       });
-
-      // Adicionar mensagem ao estado local
-      dispatch({ type: 'ADD_MESSAGE', payload: message });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
@@ -258,11 +276,26 @@ export const ChatProvider = ({ children }) => {
 
   // Criar nova conversa
   const createConversation = async (participantIds) => {
+    console.log('Criando conversa com participantes:', participantIds);
+    console.log('Usuário atual:', state.currentUser);
+    
+    if (!state.currentUser) {
+      console.log('ERRO: Não é possível criar conversa sem usuário logado');
+      throw new Error('Usuário não está logado');
+    }
+    
     try {
-      const conversation = await conversationService.createConversation(participantIds);
+      // Incluir o usuário atual nos participantes
+      const allParticipants = [state.currentUser.id, ...participantIds];
+      console.log('Todos os participantes:', allParticipants);
+      
+      const conversation = await conversationService.createConversation(allParticipants);
+      console.log('Conversa criada:', conversation);
+      
       await loadConversations(); // Recarregar lista de conversas
       return conversation;
     } catch (error) {
+      console.error('Erro ao criar conversa:', error);
       dispatch({ type: 'SET_ERROR', payload: error.message });
       throw error;
     }

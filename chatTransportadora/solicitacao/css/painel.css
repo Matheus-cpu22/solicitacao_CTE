@@ -1,0 +1,82 @@
+body {
+    background-color: #e6f0fa;
+  }
+
+  .container-custom {
+    max-width: 1000px;
+    margin: auto;
+    margin-top: 120px;
+    padding: 30px;
+    background-color: #ffffff;
+    border: 2px solid #0077cc;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 119, 204, 0.2);
+  }
+
+  table {
+    width: 100%;
+    margin-bottom: 30px;
+  }
+
+  th {
+    background-color: #0077cc;
+    color: white;
+    padding: 10px;
+    text-align: left;
+  }
+
+  td {
+    padding: 10px;
+  }
+
+  .form-control:focus {
+    border-color: #06080a;
+    box-shadow: 0 0 0 0.2rem rgba(0, 119, 204, 0.25);
+  }
+
+  .section-title {
+    font-weight: bold;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #004080;
+  }
+
+  .box-titulo {
+    background-color: #004080;
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .btn-custom {
+    background-color: #0077cc;
+    border: none;
+  }
+
+  .btn-custom:hover {
+    background-color: #005fa3;
+  }
+
+  .navbar {
+    background-color: #004080 !important;
+  }
+
+  .navbar-brand,
+  .nav-link,
+  .offcanvas-title {
+    color: white !important;
+  }
+
+  .offcanvas {
+    background-color: #004080;
+    color: white;
+  }
+
+  .offcanvas .nav-link {
+    color: white;
+  }
