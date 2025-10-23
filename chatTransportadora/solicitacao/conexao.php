@@ -1,9 +1,9 @@
 <?php
 $host = "localhost"; // Altere se necessário
 $usuario = "root"; // Seu usuário do banco de dados
-$senha = "aluno"; // Sua senha do banco de dados
-$banco = "chat_transportadora"; // Nome do banco de dados
-$porta = "3307";
+$senha = ""; // Sua senha do banco de dados
+$banco = "transportadora"; // Nome do banco de dados
+$porta = "3306";
 
 $conexao = new mysqli($host, $usuario, $senha, $banco, $porta);
 

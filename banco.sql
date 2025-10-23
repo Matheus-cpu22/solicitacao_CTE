@@ -1,5 +1,5 @@
-CREATE DATABASE Site;
-USE Site;
+CREATE DATABASE transportadora;
+USE transportadora;
 
 
 -- TABELA DAS REQUISIÇÕES
@@ -39,19 +39,15 @@ CREATE TABLE tblarquivado(
 	dataConclusao TIMESTAMP NULL
 ) ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
 
-CREATE TABLE usuario (
-	id INT PRIMARY KEY AUTO_INCREMENT,
-	nome VARCHAR(200) NOT NULL,
-	email VARCHAR(200) NOT NULL UNIQUE,
-	senha VARCHAR(255) NOT NULL
-);
 
 -- TABELAS DE CHAT
 CREATE TABLE usuario (
   id INT PRIMARY KEY AUTO_INCREMENT,
   nome VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
-  senha VARCHAR(255) NOT NULL
+  senha VARCHAR(255) NOT NULL,
+  nvlAcesso enum('user', 'adm') DEFAULT 'user' NOT NULL,
+  ativo TINYINT(1) DEFAULT 1 NOT NULL
 );
 
 CREATE TABLE conversa (
@@ -114,4 +110,4 @@ END //
 DELIMITER ;
 
 -- Usuário base
-INSERT INTO usuario (nome, email, senha) VALUES ("adm", "admin@empresa.com", "$2y$10$Akr4kI8jBU5t9x.ay4H41..OV83RF3g.EC9HfJmdR4mBYZA.39TqG"); -- TEMPORÁRIO!
+INSERT INTO usuario (nome, email, senha, nvlAcesso) VALUES ("adm", "admin@empresa.com", "$2y$10$Akr4kI8jBU5t9x.ay4H41..OV83RF3g.EC9HfJmdR4mBYZA.39TqG", "adm"); -- TEMPORÁRIO! senha: 09876

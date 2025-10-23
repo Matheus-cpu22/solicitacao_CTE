@@ -1,6 +1,6 @@
 <?php
     include("../solicitacao/conexao.php");
-    include("../login_cadastro/protect.php");
+    include("../login_cadastro/protect_adm.php");
 
     if(isset($_POST["nome"]) && isset($_POST["email"]) && isset($_POST["senha"])) {
         $nome = $_POST["nome"];
@@ -57,15 +57,25 @@
             Senha: 
             <input type="password" name="senha" id="senha" required>
         </label>
-        <button id="botao" >Criar</button>
+        <div style="color:red;" id="regra">
+            A senha deve conter no mínimo 4 dígitos!
+        </div>
+        <button id="botao" disabled>Criar</button>
     </form>
 
     <script>
         const button = document.querySelector("#botao")
         const inputSenha = document.querySelector("#senha")
-        if (inputSenha.value < 8) {
-            button.disabled = filled
-        }
+        const regra = document.querySelector("#regra")
+        inputSenha.addEventListener("input", () => {
+            regra.style = "color:red;"
+            let trava = true;
+            if(inputSenha.value.length >= 4) {
+                trava = false;
+                regra.style = "color:green;"
+            }
+            button.disabled = trava;
+        })
     </script>
 </body>
 </html>

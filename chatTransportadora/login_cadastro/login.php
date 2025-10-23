@@ -17,13 +17,15 @@ if (isset($_POST["email"]) && isset($_POST["senha"])) {
     $user = $result->fetch_assoc();
     $hash = $user["senha"];
 
-    if ($qtd_rows == 1 && password_verify($senha, $hash)) { // Verifica se houve alguma correspondência para o email e se a senha do banco bate com a senha informada
+
+    if ($qtd_rows == 1 && password_verify($senha, $hash) && $user["ativo"]) { // Verifica se houve alguma correspondência para o email e se a senha do banco bate com a senha informada
         if (!isset($_SESSION)) session_start(); // Inicia a sessão
 
         // Salva informações do usuário para uso posterior
         $_SESSION["id"] = $user["id"];
         $_SESSION["nome"] = $user["nome"];
         $_SESSION["email"] = $user["email"];
+        $_SESSION["nvl_acesso"] = $user["nvlAcesso"];
 
         echo "<script>
                 // Salvar dados do usuário no localStorage para o chat React
@@ -37,7 +39,7 @@ if (isset($_POST["email"]) && isset($_POST["senha"])) {
                 window.location.href='../solicitacao/painel.php';
               </script>";
     } else {
-        echo "<script>alert('Erro ao logar, email ou senha incorretos.'); window.location.href='./login.php';</script>";
+        echo "<script>alert('Erro ao logar, email ou senha incorretos.'); window.location.href='./login.html';</script>";
     }
 
     $conexao->close();
