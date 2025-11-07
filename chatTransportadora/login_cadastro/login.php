@@ -27,6 +27,29 @@ if (isset($_POST["email"]) && isset($_POST["senha"])) {
         $_SESSION["email"] = $user["email"];
         $_SESSION["nvl_acesso"] = $user["nvlAcesso"];
 
+        // Salvar token caso o usuario tenha selecionado 'lembre de mim'
+        if (isset($_POST["lembrar"])) {
+            $token = bin2hex(random_bytes(16));
+
+            $expira = time() + (86400 * 30);
+            setcookie("lembrar", $token, $expira, "/", "", true, true);
+
+            $data_expiracao = new DateTime();
+            $data_expiracao->modify("+30 days");
+            $data_sql = $data_expiracao->format("Y-m-d H:i:s");
+
+            $dados = [
+                'user_id' => (int)$user["id"],
+                'token' => $token,
+                'expira_em' => $data_sql
+            ];
+
+            $sql = "INSERT INTO auth_tokens (id_usuario, token, expira) VALUES (?, ?, ?)";
+            $consulta = $conexao->prepare($sql);
+            $consulta->bind_param("iss", $dados['user_id'], $dados['token'], $dados['expira_em']);
+            $consulta->execute();
+        }
+
         echo "<script>
                 // Salvar dados do usuário no localStorage para o chat React
                 localStorage.setItem('chatUser', JSON.stringify({
@@ -38,6 +61,7 @@ if (isset($_POST["email"]) && isset($_POST["senha"])) {
                 alert('Login realizado com sucesso!'); 
                 window.location.href='../solicitacao/painel.php';
               </script>";
+
     } else {
         echo "<script>alert('Erro ao logar, email ou senha incorretos.'); window.location.href='./login.html';</script>";
     }

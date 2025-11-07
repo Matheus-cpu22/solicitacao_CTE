@@ -40,16 +40,26 @@ CREATE TABLE tblarquivado(
 ) ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
 
 
--- TABELAS DE CHAT
+
 CREATE TABLE usuario (
   id INT PRIMARY KEY AUTO_INCREMENT,
   nome VARCHAR(255) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   senha VARCHAR(255) NOT NULL,
-  nvlAcesso enum('user', 'adm') DEFAULT 'user' NOT NULL,
+  nvlAcesso enum('user', 'manager', 'adm') DEFAULT 'user' NOT NULL,
   ativo TINYINT(1) DEFAULT 1 NOT NULL
 );
 
+CREATE TABLE auth_tokens (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  token VARCHAR(255) NOT NULL,
+  id_usuario INT NOT NULL,
+  expira DATETIME NOT NULL,
+  FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+)
+
+
+-- TABELAS DE CHAT
 CREATE TABLE conversa (
   id INT PRIMARY KEY AUTO_INCREMENT,
   nome VARCHAR(255) NOT NULL,
