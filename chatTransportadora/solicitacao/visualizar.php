@@ -1,5 +1,6 @@
 <?php
 include("conexao.php");
+include("../login_cadastro/includes/protect.php");
 
 // Consulta SQL
 $sql = "SELECT * FROM tblsolicitacao";

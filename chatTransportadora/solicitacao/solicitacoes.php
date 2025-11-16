@@ -1,5 +1,6 @@
 <?php
 include("conexao.php");
+include("../login_cadastro/includes/protect.php");
 
 // Obtém as solicitações agrupadas por status
 $sqlPendentes = "SELECT * FROM tblsolicitacao WHERE status = 'Pendente' ORDER BY id DESC";

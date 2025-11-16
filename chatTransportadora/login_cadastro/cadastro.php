@@ -1,6 +1,6 @@
 <?php
     include("../solicitacao/conexao.php");
-    include("../login_cadastro/protect_adm.php");
+    include("./includes/protect_adm.php");
 
     if(isset($_POST["nome"]) && isset($_POST["email"]) && isset($_POST["senha"])) {
         $nome = $_POST["nome"];

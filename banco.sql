@@ -56,7 +56,7 @@ CREATE TABLE auth_tokens (
   id_usuario INT NOT NULL,
   expira DATETIME NOT NULL,
   FOREIGN KEY (id_usuario) REFERENCES usuario(id)
-)
+);
 
 
 -- TABELAS DE CHAT

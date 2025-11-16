@@ -5,7 +5,7 @@ if (isset($_POST["email"]) && isset($_POST["senha"])) {
     $email = $_POST["email"];
     $senha = $_POST["senha"];
 
-    $sql = "SELECT * FROM usuario WHERE email = ?"; // Consulta o banco atrás de uma correspondencia para o email informado
+    $sql = "SELECT * FROM usuario WHERE email = ?"; // Consulta o banco atrás de uma correspondência para o email informado
     $consulta = $conexao->prepare($sql);
     $consulta->bind_param("s", $email);
     $consulta->execute();
@@ -32,15 +32,18 @@ if (isset($_POST["email"]) && isset($_POST["senha"])) {
             $token = bin2hex(random_bytes(16));
 
             $expira = time() + (86400 * 30);
-            setcookie("lembrar", $token, $expira, "/", "", true, true);
+            setcookie("lembrar", $token, $expira, "/", "", true, true); // cookie do token para mater o usuário logado
+            setcookie("id_usuario", $user["id"], $expira, "/", "", true, true);
 
             $data_expiracao = new DateTime();
             $data_expiracao->modify("+30 days");
             $data_sql = $data_expiracao->format("Y-m-d H:i:s");
 
+            $hash = password_hash($token, PASSWORD_DEFAULT);
+
             $dados = [
                 'user_id' => (int)$user["id"],
-                'token' => $token,
+                'token' => $hash,
                 'expira_em' => $data_sql
             ];
 

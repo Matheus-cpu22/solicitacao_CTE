@@ -1,5 +1,5 @@
 <?php
-    include("../login_cadastro/protect.php")
+    include("../login_cadastro/includes/protect.php")
 ?>
 
 <!DOCTYPE html>
